@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Gratificación Perú</title>
+<style>
+  /* Estilo general del body */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: #333;
+    padding: 30px;
+  }
+
+  /* Contenedor principal */
+  .container {
+    max-width: 650px;
+    margin: auto;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 30px 40px;
+  }
+
+  /* Título */
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+
+  /* Inputs, selects y labels */
+  label {
+    font-weight: 600;
+    display: block;
+    margin-top: 15px;
+    color: #555;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 15px;
+    margin-top: 8px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    transition: 0.3s;
+  }
+
+  input:focus, select:focus {
+    border-color: #2575fc;
+    outline: none;
+    box-shadow: 0 0 8px rgba(37,117,252,0.3);
+  }
+
+  /* Botón */
+  button {
+    width: 100%;
+    background-color: #2575fc;
+    color: white;
+    padding: 15px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 600;
+  }
+
+  button:hover {
+    background-color: #6a11cb;
+  }
+
+  /* Contenedor de comisiones */
+  .comisiones {
+    display: none;
+    margin-top: 10px;
+  }
+
+  .comisiones input {
+    margin-top: 5px;
+  }
+
+  /* Resultado */
+  .resultado {
+    background-color: #e3f2fd;
+    border-left: 6px solid #2575fc;
+    padding: 15px 20px;
+    margin-top: 25px;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  .resultado strong {
+    color: #0d47a1;
+    font-size: 17px;
+  }
+
+  .resultado em {
+    color: #d32f2f;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>Calculadora de Gratificación Perú</h2>
+
+  <label for="sueldo">Sueldo mensual (S/):</label>
+  <input type="number" id="sueldo" placeholder="Ingrese su sueldo mensual">
+
+  <label for="meses">Meses trabajados en el semestre (1-6):</label>
+  <input type="number" id="meses" placeholder="Ingrese meses trabajados" min="1" max="6">
+
+  <label for="seguro">Tipo de seguro:</label>
+  <select id="seguro">
+    <option value="essalud">ESSALUD (9%)</option>
+    <option value="eps">EPS (6.75%)</option>
+  </select>
+
+  <label for="tieneComisiones">¿Tiene comisiones?</label>
+  <select id="tieneComisiones" onchange="mostrarComisiones()">
+    <option value="no">No</option>
+    <option value="si">Sí</option>
+  </select>
+
+  <div class="comisiones" id="camposComisiones">
+    <label>Ingrese montos de sus comisiones (mínimo 3):</label>
+    <input type="number" class="comision" placeholder="Comisión 1">
+    <input type="number" class="comision" placeholder="Comisión 2">
+    <input type="number" class="comision" placeholder="Comisión 3">
+    <input type="number" class="comision" placeholder="Comisión 4">
+    <input type="number" class="comision" placeholder="Comisión 5">
+    <input type="number" class="comision" placeholder="Comisión 6">
+  </div>
+
+  <button onclick="calcularGratificacion()">Calcular Gratificación</button>
+
+  <div class="resultado" id="resultado" style="display:none;"></div>
+</div>
+
+<script>
+function mostrarComisiones() {
+  let seleccion = document.getElementById('tieneComisiones').value;
+  document.getElementById('camposComisiones').style.display = (seleccion === 'si') ? 'block' : 'none';
+}
+
+function calcularGratificacion() {
+  let sueldo = parseFloat(document.getElementById('sueldo').value);
+  let meses = parseInt(document.getElementById('meses').value);
+  let seguro = document.getElementById('seguro').value;
+  let tieneComisiones = document.getElementById('tieneComisiones').value === 'si';
+
+  if(isNaN(sueldo) || isNaN(meses) || meses < 1 || meses > 6) {
+    alert("Por favor ingrese datos válidos.");
+    return;
+  }
+
+  // Gratificación proporcional
+  let gratificacion = (sueldo * meses) / 6;
+
+  // Bonificación de Ley
+  let bonificacionLey = (seguro === 'essalud') ? gratificacion * 0.09 : gratificacion * 0.0675;
+  let nombreSeguro = seguro.toUpperCase();
+
+  // Promedio de comisiones
+  let promedioComisiones = 0;
+  let mensajeComisiones = '';
+  if (tieneComisiones) {
+    let comisiones = Array.from(document.getElementsByClassName('comision'))
+                         .map(input => parseFloat(input.value))
+                         .filter(val => !isNaN(val) && val > 0);
+
+    if (comisiones.length < 3) {
+      mensajeComisiones = 'No aplica para el promedio de comisiones (mínimo 3 ingresadas).';
+    } else {
+      promedioComisiones = comisiones.reduce((a,b) => a+b, 0) / 6;
+    }
+  }
+
+  // Monto a pagar
+  let montoAPagar = gratificacion + bonificacionLey + promedioComisiones;
+
+  document.getElementById('resultado').style.display = 'block';
+  document.getElementById('resultado').innerHTML = `
+    <strong>Gratificación proporcional:</strong> S/ ${gratificacion.toFixed(2)} <br>
+    <strong>Bonificación de Ley (${nombreSeguro}):</strong> S/ ${bonificacionLey.toFixed(2)} <br>
+    <strong>Promedio de comisiones:</strong> S/ ${promedioComisiones.toFixed(2)} <br>
+    <strong>MONTO A PAGAR:</strong> S/ ${montoAPagar.toFixed(2)} <br>
+    ${mensajeComisiones ? `<em>${mensajeComisiones}</em>` : ''}
+  `;
+}
+</script>
+</body>
+</html>
